@@ -1,0 +1,122 @@
+*line 144753 [DEBUG] test_stress2.c:64: dmalloc(2390), ptr[614]
+
+[DEBUG] dmm.c:31: there
+
+[DEBUG] dmm.c:40: assert?
+
+[DEBUG] dmm.c:47: here
+
+[DEBUG] dmm.c:53: 0x10bcea388
+
+[DEBUG] dmm.c:64: numbytes: 2390, cur->size - METADATA_T_ALIGNED: 2376
+[DEBUG] dmm.c:70: Freelist: 0x10bcf68c8 
+
+[DEBUG] dmm.c:74: Returnptr: 0x10bcf68e0 
+
+
+
+line 145443 [DEBUG] test_stress2.c:64: dmalloc(1916), ptr[158]
+
+[DEBUG] dmm.c:31: there
+
+[DEBUG] dmm.c:40: assert?
+
+[DEBUG] dmm.c:47: here
+
+[DEBUG] dmm.c:53: 0x10bcea9f0
+
+[DEBUG] dmm.c:64: numbytes: 1916, cur->size - METADATA_T_ALIGNED: 2376
+[DEBUG] dmm.c:86: Freelist (2): 0x10bcf68c8 
+[DEBUG] dmm.c:119: Returnptr: 0x10bcf68e0 
+[DEBUG] dmm.c:120: newfreelist: 0x10bcf7060 
+[DEBUG] dmm.c:121: cur->size: 1920 
+[DEBUG] dmm.c:122: New block size: 1944 
+
+
+line 182785 [DEBUG] test_stress2.c:75: Freeing ptr[614]
+
+[DEBUG] dmm.c:197: Block previous to ptr: 0x10bceb980 
+
+[DEBUG] dmm.c:199: ptr/newfreeblock: 0x10bcf68c8
+
+[DEBUG] dmm.c:211: Next: 0x10bcf7060, 0x10bd1a4c0 
+
+[DEBUG] dmm.c:225: Prev: 0x10bcec438, 0x10bcf68c8 
+
+
+line 186860 [DEBUG] test_stress2.c:64: dmalloc(673), ptr[812]
+
+[DEBUG] dmm.c:31: there
+
+[DEBUG] dmm.c:40: assert?
+
+[DEBUG] dmm.c:47: here
+
+[DEBUG] dmm.c:53: 0x10bcec330
+
+[DEBUG] dmm.c:64: numbytes: 673, cur->size - METADATA_T_ALIGNED: 1896
+[DEBUG] dmm.c:86: Freelist (2): 0x10bcf68c8 
+[DEBUG] dmm.c:119: Returnptr: 0x10bcf68e0 
+[DEBUG] dmm.c:120: newfreelist: 0x10bcf6b88 
+[DEBUG] dmm.c:121: cur->size: 680 
+[DEBUG] dmm.c:122: New block size: 704 
+
+[DEBUG] dmm.c:269:  Freelist Size:240, Head:0x10bcec330, Prev:0x0, Next:0x10bcf4aa0 
+[DEBUG] dmm.c:269:  Freelist Size:656, Head:0x10bcf4aa0, Prev:0x10bcec330, Next:0x10bcf6b88 
+[DEBUG] dmm.c:269:  Freelist Size:1216, Head:0x10bcf6b88, Prev:0x10bcf4aa0, Next:0x10bd1a0b8  
+[DEBUG] dmm.c:269:  Freelist Size:1008, Head:0x10bd1a0b8, Prev:0x10bcf6b88, Next:0x10bd1b210  
+[DEBUG] dmm.c:269:  Freelist Size:1104, Head:0x10bd1b210, Prev:0x10bd1a0b8, Next:0x10bd1f1e0  
+[DEBUG] dmm.c:269:  Freelist Size:904, Head:0x10bd1f1e0, Prev:0x10bd1b210, Next:0x10bd24478 
+[DEBUG] dmm.c:269:  Freelist Size:1560, Head:0x10bd24478, Prev:0x10bd1f1e0, Next:0x10bd2cdf0  
+[DEBUG] dmm.c:269:  Freelist Size:1624, Head:0x10bd2cdf0, Prev:0x10bd24478, Next:0x10bd34028  
+[DEBUG] dmm.c:269:  Freelist Size:2456, Head:0x10bd34028, Prev:0x10bd2cdf0, Next:0x10bd557d8  
+[DEBUG] dmm.c:269:  Freelist Size:1560, Head:0x10bd557d8, Prev:0x10bd34028, Next:0x10bd5e738  
+[DEBUG] dmm.c:269:  Freelist Size:160, Head:0x10bd5e738, Prev:0x10bd557d8, Next:0x10bd64368 
+[DEBUG] dmm.c:269:  Freelist Size:4656, Head:0x10bd64368, Prev:0x10bd5e738, Next:0x10bd7fd48  
+[DEBUG] dmm.c:269:  Freelist Size:5128, Head:0x10bd7fd48, Prev:0x10bd64368, Next:0x10bd87c68  
+[DEBUG] dmm.c:269:  Freelist Size:2768, Head:0x10bd87c68, Prev:0x10bd7fd48, Next:0x10bd89418  
+[DEBUG] dmm.c:269:  Freelist Size:4440, Head:0x10bd89418, Prev:0x10bd87c68, Next:0x10bd9c2e8  
+[DEBUG] dmm.c:269:  Freelist Size:14048, Head:0x10bd9c2e8, Prev:0x10bd89418, Next:0x10bda9398 
+[DEBUG] dmm.c:269:  Freelist Size:4192, Head:0x10bda9398, Prev:0x10bd9c2e8, Next:0x10bdac0d8  
+[DEBUG] dmm.c:269:  Freelist Size:6392, Head:0x10bdac0d8, Prev:0x10bda9398, Next:0x10bdd8308  
+[DEBUG] dmm.c:269:  Freelist Size:672, Head:0x10bdd8308, Prev:0x10bdac0d8, Next:0x10bde1c40 
+[DEBUG] dmm.c:269:  Freelist Size:2904, Head:0x10bde1c40, Prev:0x10bdd8308, Next:0x10bdf5450  
+[DEBUG] dmm.c:269:  Freelist Size:4680, Head:0x10bdf5450, Prev:0x10bde1c40, Next:0x10bdfb550  
+[DEBUG] dmm.c:269:  Freelist Size:2552, Head:0x10bdfb550, Prev:0x10bdf5450, Next:0x10be073d0  
+[DEBUG] dmm.c:269:  Freelist Size:3424, Head:0x10be073d0, Prev:0x10bdfb550, Next:0x10be2f1c8  
+[DEBUG] dmm.c:269:  Freelist Size:5440, Head:0x10be2f1c8, Prev:0x10be073d0, Next:0x10be3b340  
+[DEBUG] dmm.c:269:  Freelist Size:864, Head:0x10be3b340, Prev:0x10be2f1c8, Next:0x10be62530 
+[DEBUG] dmm.c:269:  Freelist Size:10432, Head:0x10be62530, Prev:0x10be3b340, Next:0x10be95788 
+[DEBUG] dmm.c:269:  Freelist Size:40, Head:0x10be95788, Prev:0x10be62530, Next:0x10bed6a58  
+[DEBUG] dmm.c:269:  Freelist Size:6312, Head:0x10bed6a58, Prev:0x10be95788, Next:0x10bf17da0  
+[DEBUG] dmm.c:269:  Freelist Size:10712, Head:0x10bf17da0, Prev:0x10bed6a58, Next:0x10bf4eae8 
+[DEBUG] dmm.c:269:  Freelist Size:15968, Head:0x10bf4eae8, Prev:0x10bf17da0, Next:0x10bfb5eb0 
+[DEBUG] dmm.c:269:  Freelist Size:3616, Head:0x10bfb5eb0, Prev:0x10bf4eae8, Next:0x10bff7c50  
+[DEBUG] dmm.c:269:  Freelist Size:9816, Head:0x10bff7c50, Prev:0x10bfb5eb0, Next:0x10c02d1a0  
+[DEBUG] dmm.c:269:  Freelist Size:14608, Head:0x10c02d1a0, Prev:0x10bff7c50, Next:0x10c097b70 
+[DEBUG] dmm.c:269:  Freelist Size:424, Head:0x10c097b70, Prev:0x10c02d1a0, Next:0x10c0a32c8 
+[DEBUG] dmm.c:269:  Freelist Size:9000, Head:0x10c0a32c8, Prev:0x10c097b70, Next:0x10c0e1768  
+[DEBUG] dmm.c:269:  Freelist Size:1784, Head:0x10c0e1768, Prev:0x10c0a32c8, Next:0x0  
+[DEBUG] dmm.c:272: 
+
+
+line 225982[DEBUG] test_stress2.c:75: Freeing ptr[158]
+
+[DEBUG] dmm.c:197: Block previous to ptr: 0x10bcf4aa0 
+
+[DEBUG] dmm.c:199: ptr/newfreeblock: 0x10bcf68c8
+
+[DEBUG] dmm.c:211: Next: 0x10bcf6b88, 0x10bd02638 
+
+[DEBUG] dmm.c:225: Prev: 0x10bcf4cc8, 0x10bcf68c8 
+
+
+line [DEBUG] test_stress2.c:75: Freeing ptr[812]
+
+[DEBUG] dmm.c:197: Block previous to ptr: 0x10bcf68c8 
+
+[DEBUG] dmm.c:199: ptr/newfreeblock: 0x10bcf68c8
+
+[DEBUG] dmm.c:211: Next: 0x10bcf6b88, 0x10bcf68c8 
+
+[DEBUG] dmm.c:225: Prev: 0x10bcf6b88, 0x10bcf68c8 
