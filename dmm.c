@@ -33,7 +33,6 @@ static metadata_t* freelist = NULL;
 bool init = false;
 
 void* dmalloc(size_t numbytes) {
-	DEBUG("there");
 	if(freelist == NULL) { 			// Initialize through sbrk call first time
 		if(!init && !dmalloc_init()){ // Double check
 			return NULL;
@@ -41,20 +40,18 @@ void* dmalloc(size_t numbytes) {
 	}
 
 	assert(numbytes > 0);
-	DEBUG("assert?");
 	/* Your code goes here */
 
 	// case of 0, return null pointer
 	if(numbytes == 0){
 		return NULL;
 	}
-	DEBUG("here"); 
 	metadata_t * cur = freelist;
 	if(cur==NULL || cur==0x0){ // When no free blocks, return NULL
 		print_freelist();
 		return NULL;
 	}
-	DEBUG("dmalloc cur:%p", cur);
+	// DEBUG("dmalloc cur:%p", cur);
 	while(ALIGN(numbytes) > cur->size){ // Iterate until big enough block
 		cur = cur->next;
 		if(cur==NULL || cur==0x0){
@@ -64,17 +61,17 @@ void* dmalloc(size_t numbytes) {
 	}
 
 	// Corner case for allocation rather than splitting
-	DEBUG("ALIGN(numbytes): %lu, cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED: %lu", ALIGN(numbytes), cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED);
+	// DEBUG("ALIGN(numbytes): %lu, cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED: %lu", ALIGN(numbytes), cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED);
 	// REALLY DUMB (old) BUG:
 	// These are UNSIGNED longs, so negative numbers are large! Make sure to use ALIGN!
 	// Edited to allow footer space!
 	if(METADATA_T_ALIGNED + FOOTER_T_ALIGNED >= cur->size || ALIGN(numbytes) >= cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED){
 		//size_t old_freelist_size = freelist->size;
-		DEBUG("Freelist: %p \n", cur);
+		// DEBUG("Freelist: %p \n", cur);
 		//new size is size of the block! we are not changing it.
 		void * returnptr = (void *) cur;
 		returnptr = METADATA_T_ALIGNED + returnptr;
-		DEBUG("Returnptr: %p \n", returnptr);
+		// DEBUG("Returnptr: %p \n", returnptr);
 		if(cur->prev==NULL){ //Case when cur is head of list
 			freelist = cur->next;
 		}
@@ -96,7 +93,7 @@ void* dmalloc(size_t numbytes) {
 	}
 
 	// Not corner case. Allocate FIRST PART of block. Second (new) block in freelist
-	DEBUG("Freelist (2): %p ", cur);
+	// DEBUG("Freelist (2): %p ", cur);
 
 	//change size, make pointers of allocated block NULL
 	size_t old_size = cur->size;
@@ -136,10 +133,10 @@ void* dmalloc(size_t numbytes) {
 	cur->next = NULL;
 	cur->prev = NULL;
 
-	DEBUG("Returnptr: %p ", returnptr);
-	DEBUG("newfreelist: %p ", newfreelist);
-	DEBUG("cur->size: %zd ", cur->size);
-	DEBUG("New block size: %lu \n", METADATA_T_ALIGNED + ALIGN(numbytes));
+	// DEBUG("Returnptr: %p ", returnptr);
+	// DEBUG("newfreelist: %p ", newfreelist);
+	// DEBUG("cur->size: %zd ", cur->size);
+	// DEBUG("New block size: %lu \n", METADATA_T_ALIGNED + ALIGN(numbytes));
 	print_freelist();
 
 	return returnptr;
@@ -164,7 +161,7 @@ void dfree(void* ptr) {
 		metadata_t * cur = freelist;
 		void * curvoid = (void *) cur;
 		// if(curvoid==ptr){
-		// 	//DEBUG("Block already free!!!");
+		// 	//// DEBUG("Block already free!!!");
 		// 	return;
 		// }
 
@@ -179,7 +176,7 @@ void dfree(void* ptr) {
 			void * next = (void *) newfreeblock->next;
 			void * newfreeblockvoid = (void *) newfreeblock;
 			// Coalesce to next block, with FOOTER edits. 
-			DEBUG("Next: %p, %p \n", newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED, next);
+			// DEBUG("Next: %p, %p \n", newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED, next);
 			// If adjacent to next block
 			if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED == next){
 				newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
@@ -204,20 +201,20 @@ void dfree(void* ptr) {
 		// void * curnext = (void *) cur->next;
 		// while(cur->next!=NULL && curnext<=ptr){
 		// 	// if(curnext==ptr){
-		// 	// 	DEBUG("Block already free!!!");
+		// 	// 	// DEBUG("Block already free!!!");
 		// 	// 	return;
 		// 	// }
 		// 	cur = cur->next;
 		// 	curnext = (void *) cur->next;
 		// }
-		// DEBUG("Block previous to ptr: %p \n", cur);
+		// // DEBUG("Block previous to ptr: %p \n", cur);
 
 		//FOOTER O(1) time:
 		size_t * prevfooter = (size_t *) (ptr - FOOTER_T_ALIGNED);
 		// Get to the head of header of prev block
 		cur = ptr - FOOTER_T_ALIGNED - *prevfooter - METADATA_T_ALIGNED;
 		metadata_t * newfreeblock = (metadata_t *) ptr; // Size already there
-		DEBUG("ptr/newfreeblock: %p\n", newfreeblock);
+		// DEBUG("ptr/newfreeblock: %p\n", newfreeblock);
 
 		// Add to freelist list
 		newfreeblock->next = cur->next;
@@ -232,7 +229,7 @@ void dfree(void* ptr) {
 		void * newfreeblockvoid = (void *) newfreeblock;
 
 		// Coalesce to next block
-		DEBUG("Next: %p, %p \n", newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED, next);
+		// DEBUG("Next: %p, %p \n", newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED, next);
 		if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED == next){
 			newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
 			metadata_t * newfreenext = newfreeblock->next;
@@ -246,7 +243,7 @@ void dfree(void* ptr) {
 		}
 
 		// Coalesce to prev, cur is the previous block
-		DEBUG("Prev: %p, %p \n", prev + METADATA_T_ALIGNED + cur->size + FOOTER_T_ALIGNED, newfreeblockvoid);
+		// DEBUG("Prev: %p, %p \n", prev + METADATA_T_ALIGNED + cur->size + FOOTER_T_ALIGNED, newfreeblockvoid);
 		if(prev + METADATA_T_ALIGNED + cur->size == newfreeblockvoid){
 			cur->size = cur->size + newfreeblock->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
 			cur->next = newfreeblock->next;
@@ -291,7 +288,7 @@ bool dmalloc_init() {
 	return true;
 }
 
-/*Only for //debugging purposes; can be turned off through -N//DEBUG flag*/
+/*Only for //// debugging purposes; can be turned off through -N//// DEBUG flag*/
 void print_freelist() {
 	metadata_t *freelist_head = freelist;
 	while(freelist_head != NULL) {
