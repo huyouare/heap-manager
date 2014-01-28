@@ -105,7 +105,7 @@ void* dmalloc(size_t numbytes) {
 	*returnfooter = cur->size;
 
 	void * newfreelist = (void *) cur;
-	newfreelist = newfreelist + METADATA_T_ALIGNED + ALIGN(numbytes)  + FOOTER_T_ALIGNED; 
+	newfreelist = newfreelist + METADATA_T_ALIGNED + ALIGN(numbytes) + FOOTER_T_ALIGNED; 
 	// New block address WITH FOOTER
 	
 	metadata_t * newblock = (metadata_t *) newfreelist;
