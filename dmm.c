@@ -22,7 +22,7 @@ typedef struct metadata {
 
 
 
-#define FOOTER_T_ALIGNED (ALIGN(sizeof(size_t)))
+//#define FOOTER_T_ALIGNED (ALIGN(sizeof(size_t)))
 
 /* freelist maintains all the blocks which are not in use; freelist is kept
  * always sorted to improve the efficiency of coalescing 
@@ -36,7 +36,7 @@ void* dmalloc(size_t numbytes) {
 	if(freelist == NULL) { 			// Initialize through sbrk call first time
 		if(!init && !dmalloc_init()){ // Double check
 			return NULL;
-		}		
+		}
 	}
 
 	assert(numbytes > 0);
@@ -65,7 +65,8 @@ void* dmalloc(size_t numbytes) {
 	// REALLY DUMB (old) BUG:
 	// These are UNSIGNED longs, so negative numbers are large! Make sure to use ALIGN!
 	// Edited to allow footer space!
-	if(METADATA_T_ALIGNED + FOOTER_T_ALIGNED >= cur->size || ALIGN(numbytes) >= cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED){
+	// if(METADATA_T_ALIGNED + FOOTER_T_ALIGNED >= cur->size || ALIGN(numbytes) >= cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED){
+	if(METADATA_T_ALIGNED >= cur->size || ALIGN(numbytes) >= cur->size - METADATA_T_ALIGNED){
 		//size_t old_freelist_size = freelist->size;
 		// DEBUG("Freelist: %p \n", cur);
 		//new size is size of the block! we are not changing it.
@@ -101,18 +102,19 @@ void* dmalloc(size_t numbytes) {
 
 	void * returnptr = (void *) cur;
 	returnptr = METADATA_T_ALIGNED + returnptr; // Go to return address, no footer edit
-	size_t * returnfooter = (size_t *) (cur->size + (void *) cur + METADATA_T_ALIGNED);
-	*returnfooter = cur->size;
+	// size_t * returnfooter = (size_t *) (cur->size + (void *) cur + METADATA_T_ALIGNED);
+	// *returnfooter = cur->size;
 
 	void * newfreelist = (void *) cur;
-	newfreelist = newfreelist + METADATA_T_ALIGNED + ALIGN(numbytes) + FOOTER_T_ALIGNED; 
+	//newfreelist = newfreelist + METADATA_T_ALIGNED + ALIGN(numbytes) + FOOTER_T_ALIGNED; 
+	newfreelist = newfreelist + METADATA_T_ALIGNED + ALIGN(numbytes); 
 	// New block address WITH FOOTER
 	
 	metadata_t * newblock = (metadata_t *) newfreelist;
 	// EDIT for FOOTER (overwrite):
-	newblock->size = old_size - METADATA_T_ALIGNED - ALIGN(numbytes) - FOOTER_T_ALIGNED;
-	size_t * footer = (size_t *) (newblock->size + (void *) newblock + METADATA_T_ALIGNED);
-	*footer = newblock->size;
+	newblock->size = old_size - METADATA_T_ALIGNED - ALIGN(numbytes);
+	// size_t * footer = (size_t *) (newblock->size + (void *) newblock + METADATA_T_ALIGNED);
+	// *footer = newblock->size;
 
 	if(cur->prev == NULL){ //case when head of list: change freelist
 		freelist = newblock;
@@ -178,12 +180,14 @@ void dfree(void* ptr) {
 			// Coalesce to next block, with FOOTER edits. 
 			// DEBUG("Next: %p, %p \n", newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED, next);
 			// If adjacent to next block
-			if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED == next){
-				newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+				// 		if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED == next){
+				// newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+			if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size == next){
+				newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED;
 
 				// FOOTER CHANGE
-				size_t * newfooter = (size_t *) (newfreeblock->size + (void *) newfreeblock + METADATA_T_ALIGNED);
-				*newfooter = newfreeblock->size;
+				// size_t * newfooter = (size_t *) (newfreeblock->size + (void *) newfreeblock + METADATA_T_ALIGNED);
+				// *newfooter = newfreeblock->size;
 
 				metadata_t * newfreenext = newfreeblock->next;
 				newfreeblock->next = newfreeblock->next->next;
@@ -203,21 +207,22 @@ void dfree(void* ptr) {
 		// newfreeblock: freed block
 
 		//PREVIOUSLY:
-		// void * curnext = (void *) cur->next;
-		// while(cur->next!=NULL && curnext<=ptr){
-		// 	// if(curnext==ptr){
-		// 	// 	// DEBUG("Block already free!!!");
-		// 	// 	return;
-		// 	// }
-		// 	cur = cur->next;
-		// 	curnext = (void *) cur->next;
-		// }
-		// // DEBUG("Block previous to ptr: %p \n", cur);
+		void * curnext = (void *) cur->next;
+		while(cur->next!=NULL && curnext<=ptr){
+			// if(curnext==ptr){
+			// 	// DEBUG("Block already free!!!");
+			// 	return;
+			// }
+			cur = cur->next;
+			curnext = (void *) cur->next;
+		}
+		// DEBUG("Block previous to ptr: %p \n", cur);
 
 		//FOOTER O(1) time:
-		size_t * prevfooter = (size_t *) (ptr - FOOTER_T_ALIGNED);
+		// size_t * prevfooter = (size_t *) (ptr - FOOTER_T_ALIGNED);
 		// Get to the head of header of prev block
-		cur = ptr - FOOTER_T_ALIGNED - *prevfooter - METADATA_T_ALIGNED;
+		// cur = ptr - FOOTER_T_ALIGNED - *prevfooter - METADATA_T_ALIGNED;
+		// cur = ptr - FOOTER_T_ALIGNED - *prevfooter - METADATA_T_ALIGNED;
 		metadata_t * newfreeblock = (metadata_t *) ptr; // Size already there
 		// DEBUG("ptr/newfreeblock: %p\n", newfreeblock);
 
@@ -235,12 +240,14 @@ void dfree(void* ptr) {
 
 		// Coalesce to next block
 		// DEBUG("Next: %p, %p \n", newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED, next);
-		if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED == next){
-			newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+		// if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED == next){
+		// newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+		if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size == next){
+			newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED;
 
 			// FOOTER CHANGE
-			size_t * newfooter = (size_t *) (newfreeblock->size + (void *) newfreeblock + METADATA_T_ALIGNED);
-			*newfooter = newfreeblock->size;
+			// size_t * newfooter = (size_t *) (newfreeblock->size + (void *) newfreeblock + METADATA_T_ALIGNED);
+			// *newfooter = newfreeblock->size;
 
 			metadata_t * newfreenext = newfreeblock->next;
 			newfreeblock->next = newfreeblock->next->next;
@@ -255,11 +262,12 @@ void dfree(void* ptr) {
 		// Coalesce to prev, cur is the previous block
 		// DEBUG("Prev: %p, %p \n", prev + METADATA_T_ALIGNED + cur->size + FOOTER_T_ALIGNED, newfreeblockvoid);
 		if(prev + METADATA_T_ALIGNED + cur->size == newfreeblockvoid){
-			cur->size = cur->size + newfreeblock->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+			//			cur->size = cur->size + newfreeblock->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+			cur->size = cur->size + newfreeblock->size + METADATA_T_ALIGNED;
 
 			// FOOTER CHANGE
-			size_t * newfooter = (size_t *) (cur->size + (void *) cur + METADATA_T_ALIGNED);
-			*newfooter = cur->size;
+			// size_t * newfooter = (size_t *) (cur->size + (void *) cur + METADATA_T_ALIGNED);
+			// *newfooter = cur->size;
 
 			cur->next = newfreeblock->next;
 			if(newfreeblock->next != NULL){
@@ -294,11 +302,12 @@ bool dmalloc_init() {
 		return false;
 	freelist->next = NULL;
 	freelist->prev = NULL;
-	freelist->size = max_bytes-METADATA_T_ALIGNED - FOOTER_T_ALIGNED; // EDITED FOR FOOTER
+	// freelist->size = max_bytes-METADATA_T_ALIGNED - FOOTER_T_ALIGNED; // EDITED FOR FOOTER
+	freelist->size = max_bytes-METADATA_T_ALIGNED;
 
 	// FOOTER
-	size_t * footer = (size_t *) (freelist->size + (void *) freelist + METADATA_T_ALIGNED);
-	*footer = freelist->size;
+	// size_t * footer = (size_t *) (freelist->size + (void *) freelist + METADATA_T_ALIGNED);
+	// *footer = freelist->size;
 	//print_freelist();
 	return true;
 }
@@ -308,8 +317,8 @@ void print_freelist() {
 	metadata_t *freelist_head = freelist;
 	while(freelist_head != NULL) {
 		DEBUG("\tFreelist Size:%zd, Head:%p, Prev:%p, Next:%p\t",freelist_head->size,freelist_head,freelist_head->prev,freelist_head->next);
-		size_t * footer = (size_t *) (freelist_head->size + (void *) freelist_head + METADATA_T_ALIGNED);
-		DEBUG("\tFooter Size:%lu, Address:%p", *footer, footer);
+		// size_t * footer = (size_t *) (freelist_head->size + (void *) freelist_head + METADATA_T_ALIGNED);
+		// DEBUG("\tFooter Size:%lu, Address:%p", *footer, footer);
 		freelist_head = freelist_head->next;
 	}
 	DEBUG("\n");

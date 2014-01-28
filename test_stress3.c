@@ -17,7 +17,7 @@
 
 #define BUFLEN (1000)
 
-#define LOOPCNT (50)
+#define LOOPCNT (500)
 
 #define MAX_ALLOC_SIZE (MAX_HEAP_SIZE/100)
 
