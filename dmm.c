@@ -48,14 +48,14 @@ void* dmalloc(size_t numbytes) {
 	}
 	metadata_t * cur = freelist;
 	if(cur==NULL || cur==0x0){ // When no free blocks, return NULL
-		print_freelist();
+		//print_freelist();
 		return NULL;
 	}
 	// DEBUG("dmalloc cur:%p", cur);
 	while(ALIGN(numbytes) > cur->size){ // Iterate until big enough block
 		cur = cur->next;
 		if(cur==NULL || cur==0x0){
-			print_freelist();
+			//print_freelist();
 			return NULL;
 		}
 	}
@@ -87,7 +87,7 @@ void* dmalloc(size_t numbytes) {
 		cur->prev = NULL;
 		cur->next = NULL;
 		// So size change, no worries about footer
-		print_freelist(); 
+		//print_freelist(); 
 
 		return returnptr;
 	}
@@ -137,7 +137,7 @@ void* dmalloc(size_t numbytes) {
 	// DEBUG("newfreelist: %p ", newfreelist);
 	// DEBUG("cur->size: %zd ", cur->size);
 	// DEBUG("New block size: %lu \n", METADATA_T_ALIGNED + ALIGN(numbytes));
-	print_freelist();
+	//print_freelist();
 
 	return returnptr;
 }
@@ -154,7 +154,7 @@ void dfree(void* ptr) {
 	if(freelist == NULL){
 		freelist = (metadata_t*) ptr;
 		//size should already be in header, footer
-		print_freelist();
+		//print_freelist();
 		return;
 	}
 	else{
@@ -189,7 +189,7 @@ void dfree(void* ptr) {
 				newfreenext->prev = NULL;
 			}
 			// No prev case
-			print_freelist();
+			//print_freelist();
 			return;
 		}
 
@@ -255,7 +255,7 @@ void dfree(void* ptr) {
 			// Do we need to change the cur metadata?
 		}
 	}
-	print_freelist();
+	//print_freelist();
 
 
 }
@@ -284,11 +284,11 @@ bool dmalloc_init() {
 	// FOOTER
 	size_t * footer = (size_t *) (freelist->size + (void *) freelist + METADATA_T_ALIGNED);
 	*footer = freelist->size;
-	print_freelist();
+	//print_freelist();
 	return true;
 }
 
-/*Only for //// debugging purposes; can be turned off through -N//// DEBUG flag*/
+/*Only for debugging purposes; can be turned off through -N DEBUG flag*/
 void print_freelist() {
 	metadata_t *freelist_head = freelist;
 	while(freelist_head != NULL) {
