@@ -180,6 +180,11 @@ void dfree(void* ptr) {
 			// If adjacent to next block
 			if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED == next){
 				newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+
+				// FOOTER CHANGE
+				size_t * newfooter = (size_t *) (newfreeblock->size + (void *) newfreeblock + METADATA_T_ALIGNED);
+				*newfooter = newfreeblock->size;
+
 				metadata_t * newfreenext = newfreeblock->next;
 				newfreeblock->next = newfreeblock->next->next;
 				if(newfreeblock->next != NULL){
