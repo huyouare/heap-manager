@@ -16,7 +16,7 @@
 
 #define BUFLEN (1000)
 
-#define LOOPCNT (50000)
+#define LOOPCNT (50)
 
 #define MAX_ALLOC_SIZE (MAX_HEAP_SIZE/100)
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 			if(size > 0){
 				DEBUG("dmalloc(%d), ptr[%d]\n", size, itr);
 				ptr[itr] = dmalloc(size);
-				print_freelist();
+				//print_freelist();
 			}
 			else
 				continue;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 		} else if(randvar >= ALLOC_CONST && ptr[itr] != NULL) {
 			DEBUG("Freeing ptr[%d]\n", itr);
 			dfree(ptr[itr]);
-			print_freelist();
+			//print_freelist();
 			ptr[itr] = NULL;
 		}
 	}
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 	for(i=0; i < BUFLEN; i++) {
 		if(ptr[i] != NULL) {
 			dfree(ptr[i]);
-			print_freelist();
+			//print_freelist();
 			ptr[i] = NULL;
 		}
 	}

@@ -17,12 +17,12 @@
 
 #define BUFLEN (1000)
 
-#define LOOPCNT (50000)
+#define LOOPCNT (50)
 
 #define MAX_ALLOC_SIZE (MAX_HEAP_SIZE/100)
 
 /* Set to 1 for non-deterministic seeding after each execution */
-#define PSEUDO_RANDOM_SEED	0
+#define PSEUDO_RANDOM_SEED	1
 
 #define ALLOC_CONST	0.5
 
