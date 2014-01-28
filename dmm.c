@@ -20,6 +20,8 @@ typedef struct metadata {
 	struct metadata* prev; //What's the use of prev pointer?
 } metadata_t;
 
+
+
 /* freelist maintains all the blocks which are not in use; freelist is kept
  * always sorted to improve the efficiency of coalescing 
  */
