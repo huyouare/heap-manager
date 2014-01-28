@@ -8,7 +8,7 @@
  */
 
 typedef struct metadata {
-       /* size_t is the return type of the sizeof operator. Since the size of
+  /* size_t is the return type of the sizeof operator. Since the size of
  	* an object depends on the architecture and its implementation, size_t 
 	* is used to represent the maximum size of any object in the particular
  	* implementation. 
@@ -22,21 +22,23 @@ typedef struct metadata {
 
 
 
+#define FOOTER_T_ALIGNED (ALIGN(sizeof(size_t)))
+
 /* freelist maintains all the blocks which are not in use; freelist is kept
  * always sorted to improve the efficiency of coalescing 
  */
 
 static metadata_t* freelist = NULL;
+// Boolean to keep track of initialzation when no blocks left. (See Piaza)
 bool init = false;
 
 void* dmalloc(size_t numbytes) {
 	DEBUG("there");
-	if(freelist == NULL) { 			//Initialize through sbrk call first time
-		if(!init && !dmalloc_init()){
+	if(freelist == NULL) { 			// Initialize through sbrk call first time
+		if(!init && !dmalloc_init()){ // Double check
 			return NULL;
 		}		
 	}
-	//test_print();
 
 	assert(numbytes > 0);
 	DEBUG("assert?");
@@ -48,13 +50,12 @@ void* dmalloc(size_t numbytes) {
 	}
 	DEBUG("here"); 
 	metadata_t * cur = freelist;
-	if(cur==NULL || cur==0x0){
+	if(cur==NULL || cur==0x0){ // When no free blocks, return NULL
 		print_freelist();
 		return NULL;
 	}
 	DEBUG("dmalloc cur:%p", cur);
-	while(ALIGN(numbytes) > cur->size){
-
+	while(ALIGN(numbytes) > cur->size){ // Iterate until big enough block
 		cur = cur->next;
 		if(cur==NULL || cur==0x0){
 			print_freelist();
@@ -62,13 +63,13 @@ void* dmalloc(size_t numbytes) {
 		}
 	}
 
-	//Corner case for allocation rather than splitting
-	DEBUG("ALIGN(numbytes): %lu, cur->size - METADATA_T_ALIGNED: %lu", ALIGN(numbytes), cur->size - METADATA_T_ALIGNED);
-	// REALLY DUMB BUG:
-	// These are UNSIGNED longs, so negative numbers are large!
-	if(METADATA_T_ALIGNED >= cur->size || ALIGN(numbytes) >= cur->size - METADATA_T_ALIGNED){
+	// Corner case for allocation rather than splitting
+	DEBUG("ALIGN(numbytes): %lu, cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED: %lu", ALIGN(numbytes), cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED);
+	// REALLY DUMB (old) BUG:
+	// These are UNSIGNED longs, so negative numbers are large! Make sure to use ALIGN!
+	// Edited to allow footer space!
+	if(METADATA_T_ALIGNED + FOOTER_T_ALIGNED >= cur->size || ALIGN(numbytes) >= cur->size - METADATA_T_ALIGNED - FOOTER_T_ALIGNED){
 		//size_t old_freelist_size = freelist->size;
-		//MAKE POINTERS NULL
 		DEBUG("Freelist: %p \n", cur);
 		//new size is size of the block! we are not changing it.
 		void * returnptr = (void *) cur;
@@ -80,35 +81,41 @@ void* dmalloc(size_t numbytes) {
 		else{
 			cur->prev->next = cur->next;
 		}
-		if(cur->next==NULL){
+		if(cur->next==NULL){ //Case when cur is tail
+			//freelist doesn't move
 		}
 		else{
 			cur->next->prev = cur->prev;
 		}
 		cur->prev = NULL;
 		cur->next = NULL;
+		// So size change, no worries about footer
 		print_freelist(); 
 
 		return returnptr;
 	}
 
-
-	//DEBUG("Freelist (2): %p ", cur);
+	// Not corner case. Allocate FIRST PART of block. Second (new) block in freelist
+	DEBUG("Freelist (2): %p ", cur);
 
 	//change size, make pointers of allocated block NULL
-	//MAKE POINTERS NULL
 	size_t old_size = cur->size;
 	cur->size = ALIGN(numbytes);
 
 	void * returnptr = (void *) cur;
-	returnptr = METADATA_T_ALIGNED + returnptr;
+	returnptr = METADATA_T_ALIGNED + returnptr; // Go to return address, no footer edit
 	
 	void * newfreelist = (void *) cur;
-	newfreelist = newfreelist + METADATA_T_ALIGNED + ALIGN(numbytes);
+	newfreelist = newfreelist + METADATA_T_ALIGNED + ALIGN(numbytes)  + FOOTER_T_ALIGNED; 
+	// New block address WITH FOOTER
 	
 	metadata_t * newblock = (metadata_t *) newfreelist;
-	newblock->size = old_size - METADATA_T_ALIGNED - ALIGN(numbytes);
-	if(cur->prev == NULL){ //case when head of list
+	// EDIT for FOOTER:
+	newblock->size = old_size - METADATA_T_ALIGNED - ALIGN(numbytes) - FOOTER_T_ALIGNED;
+	size_t * footer = (size_t *) (newblock->size + (void *) newblock);
+	*footer = newblock->size;
+
+	if(cur->prev == NULL){ //case when head of list: change freelist
 		freelist = newblock;
 		newblock->prev = NULL;
 	}
@@ -116,6 +123,7 @@ void* dmalloc(size_t numbytes) {
 		cur->prev->next = newblock;
 		newblock->prev = cur->prev;
 	}
+
 	if(cur->next == NULL){
 		newblock->next = NULL;
 	}
@@ -126,21 +134,13 @@ void* dmalloc(size_t numbytes) {
 	cur->next = NULL;
 	cur->prev = NULL;
 
+	DEBUG("Returnptr: %p ", returnptr);
+	DEBUG("newfreelist: %p ", newfreelist);
+	DEBUG("cur->size: %zd ", cur->size);
+	DEBUG("New block size: %lu \n", METADATA_T_ALIGNED + ALIGN(numbytes));
+	print_freelist();
 
-	//DEBUG("Returnptr: %p ", returnptr);
-	//DEBUG("newfreelist: %p ", newfreelist);
-	//DEBUG("cur->size: %zd ", cur->size);
-	//DEBUG("New block size: %lu \n", METADATA_T_ALIGNED + ALIGN(numbytes));
-
-
-	//print_freelist();
-
-	//change freelist if first block used
 	return returnptr;
-
-	//void * newblock = (metadata_t*)
-
-	//freelist = freelist + ALIGN(numbytes) + ;
 }
 
 void dfree(void* ptr) {
@@ -149,7 +149,7 @@ void dfree(void* ptr) {
 		return;
 
 	ptr = ptr - METADATA_T_ALIGNED; // GO TO header
-	// YOU ARE ALREADY AT THE HEADER
+	// YOU ARE NOW AT THE HEADER!!!
 
 	//NULL case
 	if(freelist == NULL){
@@ -251,7 +251,7 @@ void dfree(void* ptr) {
 }
 
 bool dmalloc_init() {
-
+	// set additional boolean to make sure this is allowed once.
 	init = true;
 
 	/* Two choices: 
@@ -264,12 +264,17 @@ bool dmalloc_init() {
 
 	size_t max_bytes = ALIGN(MAX_HEAP_SIZE);
 	freelist = (metadata_t*) sbrk(max_bytes); // returns heap_region, which is initialized to freelist
-	/* Q: Why casting is used? i.e., why (void*)-1? */
+	/* Q: Why casting is used? i.e., why (void*)-1? */ //That's what sbrk returns as address when invalid
 	if (freelist == (void *)-1)
 		return false;
 	freelist->next = NULL;
 	freelist->prev = NULL;
-	freelist->size = max_bytes-METADATA_T_ALIGNED;
+	freelist->size = max_bytes-METADATA_T_ALIGNED - FOOTER_T_ALIGNED; // EDITED FOR FOOTER
+
+	// FOOTER
+	size_t * footer = (size_t *) (freelist->size + (void *) freelist);
+	*footer = freelist->size;
+	print_freelist();
 	return true;
 }
 
@@ -278,6 +283,8 @@ void print_freelist() {
 	metadata_t *freelist_head = freelist;
 	while(freelist_head != NULL) {
 		DEBUG("\tFreelist Size:%zd, Head:%p, Prev:%p, Next:%p\t",freelist_head->size,freelist_head,freelist_head->prev,freelist_head->next);
+		size_t * footer = (size_t *) (freelist_head->size + (void *) freelist_head);
+		DEBUG("\tFooter Size:%lu, Address:%p", *footer, footer);
 		freelist_head = freelist_head->next;
 	}
 	DEBUG("\n");
