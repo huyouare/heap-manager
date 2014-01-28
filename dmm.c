@@ -237,6 +237,11 @@ void dfree(void* ptr) {
 		// DEBUG("Next: %p, %p \n", newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED, next);
 		if(newfreeblockvoid + METADATA_T_ALIGNED + newfreeblock->size + FOOTER_T_ALIGNED == next){
 			newfreeblock->size = newfreeblock->size + newfreeblock->next->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+
+			// FOOTER CHANGE
+			size_t * newfooter = (size_t *) (newfreeblock->size + (void *) newfreeblock + METADATA_T_ALIGNED);
+			*newfooter = newfreeblock->size;
+
 			metadata_t * newfreenext = newfreeblock->next;
 			newfreeblock->next = newfreeblock->next->next;
 			if(newfreeblock->next != NULL){
@@ -251,6 +256,11 @@ void dfree(void* ptr) {
 		// DEBUG("Prev: %p, %p \n", prev + METADATA_T_ALIGNED + cur->size + FOOTER_T_ALIGNED, newfreeblockvoid);
 		if(prev + METADATA_T_ALIGNED + cur->size == newfreeblockvoid){
 			cur->size = cur->size + newfreeblock->size + METADATA_T_ALIGNED + FOOTER_T_ALIGNED;
+
+			// FOOTER CHANGE
+			size_t * newfooter = (size_t *) (cur->size + (void *) cur + METADATA_T_ALIGNED);
+			*newfooter = cur->size;
+
 			cur->next = newfreeblock->next;
 			if(newfreeblock->next != NULL){
 				newfreeblock->next->prev = cur;
