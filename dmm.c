@@ -94,7 +94,7 @@ void* dmalloc(size_t numbytes) {
 
 		return returnptr;
 	}
- 
+
 	// Not corner case. Allocate FIRST PART of block. Second (new) block in freelist
 	DEBUG("Freelist (2): %p ", cur);
 
